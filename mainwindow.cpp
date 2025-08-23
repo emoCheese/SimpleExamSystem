@@ -4,6 +4,7 @@
 #include <QTime>
 #include <QDebug>
 #include <QTextStream>
+#include <QSpacerItem>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -154,6 +155,8 @@ void MainWindow::initButtons()
                     else rbtn->setText("错误");
                     _questions[i]->addOption(rbtn);
                 }
+                QSpacerItem* spacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+                _questions[i]->addSpacerItem(spacer);
             } else {  // 多选
                 _questions[i]->setType(QuestionType::MultipleChoice);
                 for(int j = 0; j < 4; ++j) {

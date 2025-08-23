@@ -17,8 +17,9 @@ class Question;
  * @brief The QuestionType enum
  * SingleChoice 和 TrueFalse 分别表示单选题和判断题，使用 QRadioButton
  * MultipleChoice 表示多选题，使用复选框
+ * Defualt 表示未设置题目类型
  */
-enum QuestionType {
+enum class QuestionType {
     SingleChoice,
     MultipleChoice,
     TrueFalse,
@@ -32,22 +33,27 @@ class Question : public QWidget
 
 public:
     explicit Question(QWidget *parent = nullptr);
-
+    // 题号, 父类
     explicit Question(const QString& title, QWidget *parent = nullptr);
-    // 标题，选项类型，父类
+    // 题号, 选项类型, 父类
     explicit Question(const QString& title, QuestionType type, QWidget *parent = nullptr);
-    // 标题，选项数量，选项类型，父类
+    // 题号, 选项数量, 选项类型, 父类
     explicit Question(const QString& title, int num, QuestionType type, QWidget *parent = nullptr);
 
     ~Question();
 
     void setTile(const QString& title);
-
     void setType(QuestionType type);
+
+    void setQuestion(const QString& q);
+    void setAnswer(const QString& ans);
 
     // checkbox radiobutton 的父类都是 QAbstractButton
     void addOption(const QString &text, QAbstractButton* btn);
     void addOption(QAbstractButton* btn);
+
+    void addWidget(QWidget* widget, int stretch = 0);
+    void addSpacerItem(QSpacerItem *spacerItem);
 
 
     QString getSelectedChoice() const;
@@ -56,7 +62,10 @@ private:
     Ui::Question *ui;
     QVBoxLayout* _vLayout;
     QLabel* _labelTile;
+
+    QString _question;
     QVector<QAbstractButton*> _btns;
+    QString _trueAnswer;
     QuestionType _type;
     int _score;
 };

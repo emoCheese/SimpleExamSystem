@@ -11,13 +11,20 @@
 #include <QRadioButton>
 #include <QButtonGroup>
 #include "question.h"
-#include "answeritem.h"
+// #include "answeritem.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
 }
 QT_END_NAMESPACE
+
+enum class State {
+    BEGIN,
+    READ_QUESTION,
+    READ_ANSWER,
+    END
+};
 
 class MainWindow : public QMainWindow
 {
@@ -42,14 +49,12 @@ private:
     QTimer* _timer;
     QLabel* _labelTime;
 
-    QStringList _noteList;
-    QStringList _ansList;
+    QStringList _noteList;   // 注释
+    QStringList _ansList;    // 答案 按顺序
 
     unsigned long long _second;
     int _questionNum;
 
     QVector<Question*> _questions;
-
-
 };
 #endif // MAINWINDOW_H
