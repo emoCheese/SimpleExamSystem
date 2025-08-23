@@ -26,7 +26,11 @@ Question::Question(const QString &title, QWidget *parent)
 
     _vLayout = new QVBoxLayout(this);
     _labelTile = new QLabel(title, this);
+    _labelTile->setMaximumHeight(40);
+    _labelTile->setMinimumHeight(40);
 
+
+    this->setMaximumHeight(130);
     this->setLayout(_vLayout);
 
     _vLayout->addWidget(_labelTile);
@@ -153,6 +157,16 @@ void Question::addOption(QAbstractButton *btn)
         break;
     }
     }
+}
+
+void Question::addWidget(QWidget *widget, int stretch)
+{
+    _vLayout->addWidget(widget, stretch);
+}
+
+void Question::addSpacerItem(QSpacerItem *spacerItem)
+{
+    _vLayout->addSpacerItem(spacerItem);
 }
 
 QString Question::getSelectedChoice() const
