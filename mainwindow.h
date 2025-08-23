@@ -3,9 +3,15 @@
 
 #include <QMainWindow>
 #include <QTimer>
-#include <QElapsedTimer>
-
 #include <QLabel>
+
+#include <QVector>
+#include <QMap>
+#include <QCheckBox>
+#include <QRadioButton>
+#include <QButtonGroup>
+#include "question.h"
+#include "answeritem.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -24,15 +30,26 @@ public:
 private slots:
     void slot_timeout();
 
+    void on_btnCommit_clicked();
+
 private:
     void setWindowUI();
     void initTextEdit();
     void initTimer();
+    void initButtons();
 
     Ui::MainWindow *ui;
     QTimer* _timer;
     QLabel* _labelTime;
 
+    QStringList _noteList;
+    QStringList _ansList;
+
     unsigned long long _second;
+    int _questionNum;
+
+    QVector<Question*> _questions;
+
+
 };
 #endif // MAINWINDOW_H
