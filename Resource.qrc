@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/data">
+        <file>data/account.txt</file>
+        <file>data/exam.txt</file>
+    </qresource>
+</RCC>
