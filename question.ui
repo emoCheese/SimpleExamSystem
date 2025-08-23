@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SelectForm</class>
- <widget class="QWidget" name="SelectForm">
+ <class>Question</class>
+ <widget class="QWidget" name="Question">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>212</width>
+    <height>332</height>
    </rect>
   </property>
   <property name="windowTitle">
