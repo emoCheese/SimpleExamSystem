@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # C++ objects and libs
 *.slo
 *.lo
@@ -54,6 +55,8 @@ compile_commands.json
 
 *_qmlcache.qrc
 =======
+=======
+>>>>>>> c1e19d8bac29a19597f16ce5795b410b427eebdd
 # This file is used to ignore files which are generated
 # ----------------------------------------------------------------------------
 
@@ -136,4 +139,7 @@ CMakeLists.txt.user*
 .rcc/
 .uic/
 /build*/
+<<<<<<< HEAD
 >>>>>>> 6124b5b (初步提交)
+=======
+>>>>>>> c1e19d8bac29a19597f16ce5795b410b427eebdd
