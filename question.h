@@ -58,14 +58,17 @@ public:
 
     QString getSelectedChoice() const;
 
+    int getScore() const;
+    QString getAnswer() const;
+
 private:
     Ui::Question *ui;
     QVBoxLayout* _vLayout;
     QLabel* _labelTile;
 
     QString _question;
-    QVector<QAbstractButton*> _btns;
     QString _trueAnswer;
+    QVector<QAbstractButton*> _btns;
     QuestionType _type;
     int _score;
 };

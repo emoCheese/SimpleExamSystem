@@ -21,7 +21,9 @@ QT_END_NAMESPACE
 
 enum class State {
     BEGIN,
+    READ_NOTE,
     READ_QUESTION,
+    READ_OPTION,
     READ_ANSWER,
     END
 };
@@ -49,6 +51,7 @@ private:
     QTimer* _timer;
     QLabel* _labelTime;
 
+    QStringList _que;        // 题目
     QStringList _noteList;   // 注释
     QStringList _ansList;    // 答案 按顺序
 
