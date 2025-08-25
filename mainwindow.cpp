@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QTextStream>
 #include <QSpacerItem>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -14,12 +15,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     _second = 0;
     _questionNum = 0;
-    initTimer();
+
     initTextEdit();
     initButtons();
     setWindowUI();
     setWindowTitle("考试用时: --:--:--");
-
+    initTimer();
 
 }
 
@@ -52,7 +53,6 @@ void MainWindow::setWindowUI()
     _labelTime = new QLabel(this);
     _labelTime->setText("考试用时: --:--:--");
     ui->statusbar->addWidget(_labelTime);
-
 }
 
 void MainWindow::initTextEdit()
@@ -75,37 +75,122 @@ void MainWindow::initTextEdit()
     QTextStream stream(&file);
     stream.setCodec("utf-8");
     bool isFirst = true;
-    while(!stream.atEnd()) {
-        QString line = stream.readLine().trimmed(); // 读取行并去除首尾空格
-        if (line.isEmpty())
-            continue;
-        QChar cval = line.at(0);
-        if (cval == '!') {    // 答案
-            line.remove(0,1);
-            qDebug() << line;
-            _ansList.append(line);
-            continue;
-        } else if (cval == '#') {  // 注释
-            _noteList.append(line);
-            qDebug() << line;
-            continue;
-        } else if (cval == 'Q') {   // 题目
-            QString txt;
-            if (isFirst) {
+
+
+    // 状态机进行读取
+    bool needRead = true;
+    State currentState = State::BEGIN;
+    QString line;
+    QChar cval;
+    while(1) {
+        if (needRead) {
+            if (stream.atEnd()) {
+                break;
+            }
+            line = stream.readLine().trimmed(); // 读取行并去除首尾空格
+            if (line.isEmpty())
+                continue;
+            cval = line.at(0);
+        } else {
+            needRead = true;
+        }
+        switch (currentState) {
+        case State::BEGIN:
+            if(cval == '#')  { // 读注释
+                _noteList.append(line.remove(0,1));
+            } else if (cval == 'Q') {  // 若当前读到的行是 题目，则下个循环不进行读取，needRead 置为 false;
+                currentState = State::READ_QUESTION;
+                needRead = false;
+            }
+            break;
+        case State::READ_QUESTION:    // 读问题
+            if (cval == 'Q') {
+                QString txt;
+                if (isFirst) {
+                    txt = line.remove(0,1);
+                    qDebug() << txt;
+                    _que.append(txt);
+                    isFirst = false;
+                    ui->plainTextEdit->appendPlainText(txt);
+                    _questionNum++;
+                    currentState = State::READ_OPTION;
+                    break;
+                }
                 txt = line.remove(0,1);
-                isFirst = false;
+                qDebug() << txt;
+                _que.append(txt);
+                txt = "\n" + txt;
                 ui->plainTextEdit->appendPlainText(txt);
                 _questionNum++;
-                continue;
+                currentState = State::READ_OPTION;
+            } else {
+                // to do 报错
             }
-            txt = "\n" + line.remove(0,1);
-            ui->plainTextEdit->appendPlainText(txt);
-            _questionNum++;
-            continue;
-        } else if (cval == '.') {   // 选项
-            ui->plainTextEdit->appendPlainText(line.remove(0,1));
+            break;
+        case State::READ_OPTION:    // 读选项
+            if (cval == '.') {
+                qDebug() << line;
+                ui->plainTextEdit->appendPlainText(line.remove(0,1));
+            } else if (cval == '!') {   // 若当前读到的行是 答案，则下个循环不进行读取，needRead 置为 false;
+                needRead = false;
+                currentState = State::READ_ANSWER;
+            }
+            break;
+        case State::READ_ANSWER:   // 读答案
+            if (cval == '!') {
+                QString ans = line.remove(0,3).trimmed();
+                qDebug() << "答案:" <<ans;
+                _ansList.append(ans);
+                currentState = State::READ_QUESTION;
+            }
+            break;
+        case State::END:
+
+            break;
+        default:
+
+            break;
         }
     }
+
+
+    /*
+    // 循环进行读取
+    // while(!stream.atEnd()) {
+    //     QString line = stream.readLine().trimmed(); // 读取行并去除首尾空格
+    //     if (line.isEmpty())
+    //         continue;
+    //     QChar cval = line.at(0);
+    //     if (cval == '!') {    // 答案
+    //         line.remove(0,1);
+    //         qDebug() << line;
+    //         _ansList.append(line);
+    //         continue;
+    //     } else if (cval == '#') {  // 注释
+    //         _noteList.append(line);
+    //         qDebug() << line;
+    //         continue;
+    //     } else if (cval == 'Q') {   // 题目
+    //         QString txt;
+    //         if (isFirst) {
+    //             txt = line.remove(0,1);
+    //             _que.append(txt);
+    //             isFirst = false;
+    //             ui->plainTextEdit->appendPlainText(txt);
+    //             _questionNum++;
+    //             continue;
+    //         }
+    //         txt = line.remove(0,1);
+    //         _que.append(txt);
+    //         txt = "\n" + txt;
+    //         ui->plainTextEdit->appendPlainText(txt);
+    //         _questionNum++;
+    //         continue;
+    //     } else if (cval == '.') {   // 选项
+    //         ui->plainTextEdit->appendPlainText(line.remove(0,1));
+    //     }
+    // }
+    */
 }
 
 void MainWindow::initTimer()
@@ -125,15 +210,21 @@ void MainWindow::initButtons()
         qDebug() << "问题数量与答案数量不一致";
         return;
     }
-    for(int i = 0; i < _questionNum; ++i) {
+
+    qDebug() << "_ansList.count(): " << _ansList.count();
+    for(int i = 0; i < _ansList.count(); ++i) {
+        // 构造 Question 并设置 UI
         Question* question = new Question("题目 " + QString::number(i + 1));
+        question->setQuestion(_que[i]);
+        question->setAnswer(_ansList[i]);
+
         _questions.push_back(question);
         ui->horizontalLayout->addWidget(question, i);
-    }
+        QSpacerItem* hspacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        ui->horizontalLayout->addSpacerItem(hspacer);
 
-    for(int i = 0; i < _ansList.count(); ++i) {
-        QStringList line = _ansList[i].split(' ', Qt::SkipEmptyParts);
-        QString ans = line.at(1);
+        // 添加选项
+        QString ans = _ansList[i];
         if (ans.isEmpty()) {
             continue;
         }
@@ -155,8 +246,8 @@ void MainWindow::initButtons()
                     else rbtn->setText("错误");
                     _questions[i]->addOption(rbtn);
                 }
-                QSpacerItem* spacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
-                _questions[i]->addSpacerItem(spacer);
+                QSpacerItem* vspacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+                _questions[i]->addSpacerItem(vspacer);
             } else {  // 多选
                 _questions[i]->setType(QuestionType::MultipleChoice);
                 for(int j = 0; j < 4; ++j) {
@@ -167,24 +258,20 @@ void MainWindow::initButtons()
             }
         }
     }
+    // _ansList.count()
 }
 
 void MainWindow::on_btnCommit_clicked()
 {
-    // QVector<AnswerItem*> items;
-
-    // // 获取 单选，判断的题
-    // int count = _groups.count();
-    // for(int i = 0; i < count; ++i) {
-    //     auto group = _groups[i];
-    //     auto list = group->buttons();  // QAbstractButton* List
-    //     for(int i = 0; i < list.count(); ++i) {
-    //         auto rbtn = static_cast<QRadioButton*>(list[i]);
-    //         // 获取选项
-    //         rbtn->text();
-    //         AnswerItem* item = new AnswerItem();
-    //     }
+    int totalScore = 0;
+    for(const auto& val : qAsConst(_questions)) {
+        totalScore += val->getScore();
+    }
+    // qDebug() << "-----------------";
+    // for(int i = 0; i < 10; ++i) {
+    //     totalScore += _questions[i]->getScore();
+    //     qDebug() << _ansList[i] << " " << _questions[i]->getAnswer();
     // }
-
+    QMessageBox::information(this, "成绩", QString::asprintf("您的成绩是: %d", totalScore));
 }
 

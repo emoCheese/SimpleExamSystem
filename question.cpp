@@ -26,8 +26,8 @@ Question::Question(const QString &title, QWidget *parent)
 
     _vLayout = new QVBoxLayout(this);
     _labelTile = new QLabel(title, this);
-    _labelTile->setMaximumHeight(40);
-    _labelTile->setMinimumHeight(40);
+    _labelTile->setMaximumHeight(30);
+    _labelTile->setMinimumHeight(30);
 
 
     this->setMaximumHeight(130);
@@ -35,6 +35,7 @@ Question::Question(const QString &title, QWidget *parent)
 
     _vLayout->addWidget(_labelTile);
     _type = QuestionType::Defualt;
+    _score = 10;
 }
 
 Question::Question(const QString &title, int num, QuestionType type, QWidget *parent)
@@ -99,6 +100,16 @@ void Question::setTile(const QString &title)
 void Question::setType(QuestionType type)
 {
     _type = type;
+}
+
+void Question::setQuestion(const QString &q)
+{
+    this->_question = q;
+}
+
+void Question::setAnswer(const QString &ans)
+{
+    this->_trueAnswer = ans;
 }
 
 void Question::addOption(const QString& text, QAbstractButton * btn)
@@ -173,11 +184,13 @@ QString Question::getSelectedChoice() const
 {
     switch (_type) {
         case QuestionType::MultipleChoice: {
+            QString choice("");
             for(auto button : _btns) {
                 auto btn = static_cast<QCheckBox*>(button);
                 if (btn->checkState() == Qt::Checked)
-                    return btn->text();
+                    choice +=btn->text();
             }
+            return choice;
             break;
         }
         case QuestionType::SingleChoice: {
@@ -203,4 +216,35 @@ QString Question::getSelectedChoice() const
         }
     }
     return QString("");
+}
+
+int Question::getScore() const
+{
+    switch (_type) {
+    case QuestionType::MultipleChoice: {
+        QString choice = getSelectedChoice();
+        if (choice != _trueAnswer) return 0;
+        else return _score;
+        break;
+    }
+    case QuestionType::SingleChoice:
+    case QuestionType::TrueFalse: {
+        QString choice = getSelectedChoice();
+        if (choice == _trueAnswer)
+            return _score;
+        else
+            return 0;
+        break;
+    }
+    default: {
+        qDebug() << "未设置问题类型";
+        return -1;
+        break;
+    }
+    }
+}
+
+QString Question::getAnswer() const
+{
+    return _trueAnswer;
 }
